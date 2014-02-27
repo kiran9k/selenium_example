@@ -25,9 +25,13 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 public class trial {
 	public static class Global {
 		public static String download_location="/home/kiran/Downloads/temp";
-		//specifies the max count for downloading
-		//if set to 0 = unlimited
-		public static int download_count=20;
+		
+		public static int start_page=2;//starts from 1
+		public static int  end_page=3;//starts from 1
+		
+		public static int start_album_id=1;//starts from 1
+		public static int end_album_id=10;//starts from 1
+		public static int kbps=48;// available values: 48/128/320
 		
 		
 		
@@ -38,63 +42,105 @@ public class trial {
 		 FirefoxProfile profile = new FirefoxProfile();
 		 profile.setPreference("browser.download.dir", Global.download_location);
 		 profile.setPreference("browser.download.folderList", 2);
-		 int actual_count=0;
-		 int current_page=1;
+		
+		 int current_page=Global.start_page;
 		 String page_no="";
+		 if(Global.start_page>1)
+			 page_no="?l=-1&p="+String.valueOf((current_page));
+		 
 		profile.setPreference("browser.helperApps.neverAsk.saveToDisk","Zip archive,Application/zip"); 
 		WebDriver driver = new FirefoxDriver(profile);
 		driver.manage().timeouts().implicitlyWait(5
 				, TimeUnit.SECONDS);
         // Go to the Google Suggest home page
 		do{
-        driver.get("http://h-128.filexchanger.com/Hindi_128/album.php"+page_no);
-        // Enter the query string "Cheese"
-        WebElement query = driver.findElement(By.tagName("ul"));
-        //System.out.println(query.getText());
-        List<WebElement> q=query.findElements(By.tagName("li"));
-        //System.out.println(q.toString());
-        for(int i=0;i<q.size()&& i<Global.download_count;i++)
-        {
-        	System.out.println(q.get(i).getText());
-        	WebElement a=q.get(i).findElement(By.tagName("a"));        	
-        	a.click();
-            List<WebElement> a_1=driver.findElements(By.tagName("a"));
-        	
-        	for (int j=0;j<a_1.size();j++)
-        	{
-        		if(a_1.get(j).getText().matches("128kbps"))
-        		{
-        			
-        			System.out.println("128 kbps mathced");
-        			a_1.get(j).click();
-        			List<WebElement> a_2=driver.findElements(By.tagName("a"));
-                	for (int k=0;k<a_2.size();k++)
-                	{
-                		if(a_2.get(k).getText().matches("Download Now!"))
-                		{
-                			System.out.println("128 kbpsdownload");
-                			//a_2.get(k).click();
-                			actual_count++;
-                			driver.navigate().back();
-                			break;
-                		}
-                	}
-                	driver.navigate().back();
-                	//a_1.
-                	query = driver.findElement(By.tagName("ul"));
-                	q=query.findElements(By.tagName("li"));
-                	break;
-        		}
-        		
-        	}
-        	
-        	
-        	}
-        current_page++;
-        page_no="?l=-1&p="+String.valueOf((current_page));
-    	}while(actual_count<Global.download_count);
+			if(Global.start_page>Global.end_page)
+			{
+				System.out.println("invalid start page end page combination");
+				break;
+			}
+			else if(Global.start_page==Global.end_page)
+				if(Global.start_album_id>Global.end_album_id)
+				{
+					System.out.println("invalid start /end album ocmbination");
+					break;
+				}
+			
+			driver.get("http://h-128.filexchanger.com/Hindi_128/album.php"+page_no);
+			// Enter the query string "Cheese"
+			WebElement query = driver.findElement(By.tagName("ul"));
+			//	System.out.println(query.getText());
+			List<WebElement> q=query.findElements(By.tagName("li"));
+			//System.out.println(q.toString());
+			int end_count=9999;
+			if(current_page==Global.end_page)
+			{
+				end_count=Global.end_album_id;
+				if(end_count>q.size()||end_count<1)
+				{
+        		System.out.println("invalid end album id");
+        		break;
+				}
+			}
+			int start_count=0;
+			if(current_page==Global.start_page)
+			{   
+				start_count=Global.start_album_id-1;
+				if(Global.start_album_id-1>q.size()||Global.start_album_id<1)
+				{
+					System.out.println("invalid start album id");
+					break;
+				}
+			}
+			
+			for(int i=start_count;i<q.size()&& i<end_count;i++)
+			{
+				//System.out.println("q size:"+q.size()+"edn_count"+end_count+"i"+i);
+				//System.out.println(q.get(i).getText());
+				String name=q.get(i).getText();
+				WebElement a=q.get(i).findElement(By.tagName("a"));        	
+				a.click();
+				List<WebElement> a_1=driver.findElements(By.tagName("a"));				
+				for (int j=0;j<a_1.size();j++)
+				{					
+					if(a_1.get(j).getText().matches(String.valueOf(Global.kbps)+"kbps"))
+					{						
+						//System.out.println("128 kbps mathced");
+						a_1.get(j).click();
+						List<WebElement> a_2=driver.findElements(By.tagName("a"));
+						boolean available=false;
+						for (int k=0;k<a_2.size();k++)
+						{
+							if(a_2.get(k).getText().matches("Download Now!"))
+							{
+								//System.out.println("128 kbpsdownload");
+								a_2.get(k).click();
+								//actual_count++;
+								available=true;
+								break;
+							}
+						}
+						if(!available)
+							System.out.println("File not avialable for : "+name.replaceAll("\n", " "));
+						else
+							System.out.println("Download started for "+name.replaceAll("\n"," "));
+						driver.navigate().back();
+						break;					
+					}	
+				}
+				driver.navigate().back();
+				//	a_1.
+				query = driver.findElement(By.tagName("ul"));
+				q=query.findElements(By.tagName("li"));
+				
+			}
+			//System.out.println("1 page done");
+			current_page++;
+			page_no="?l=-1&p="+String.valueOf((current_page));
+    	}
+		while(current_page<=Global.end_page);
         if(still_downloading())
-        	driver.quit();
+        		driver.quit();
         
 	}
 	public static boolean still_downloading()
@@ -110,8 +156,7 @@ public class trial {
         		boolean none_present=true;
         		for(File f:files)
         		{
-        			System.out.println(f.getName());
-        			//System.out.println(f.getName().endsWith(".zip"));
+        			
         			if(f.getName().endsWith(".part"))     			
         			{
         				none_present=false;
