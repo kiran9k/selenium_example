@@ -1,0 +1,16 @@
+download_location=/home/kiran/Downloads/temp
+
+#starts from 1//
+start_page=1
+
+#starts from 1//
+end_page=1
+
+#starts from 1
+start_album_id=16
+
+#starts from 1
+end_album_id=16
+
+#available values: 48/128/320
+kbps=48

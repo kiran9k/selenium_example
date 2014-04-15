@@ -14,8 +14,10 @@ package music_download;
  */
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -23,15 +25,17 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 
 public class trial {
+	
 	public static class Global {
-		public static String download_location="/home/kiran/Downloads/temp";
+		static ArrayList<String> prop = config_reader.get_prop();
+		public static String download_location=String.valueOf(prop.get(0));//"/home/kiran/Downloads/temp";
 		
-		public static int start_page=2;//starts from 1
-		public static int  end_page=3;//starts from 1
+		public static int start_page=Integer.parseInt(prop.get(1));//starts from 1//starts from 1
+		public static int  end_page=Integer.parseInt(prop.get(2));;//starts from 1
 		
-		public static int start_album_id=1;//starts from 1
-		public static int end_album_id=10;//starts from 1
-		public static int kbps=48;// available values: 48/128/320
+		public static int start_album_id=Integer.parseInt(prop.get(3));;//starts from 1
+		public static int end_album_id=Integer.parseInt(prop.get(4));;//starts from 1
+		public static int kbps=Integer.parseInt(prop.get(5));// available values: 48/128/320
 		
 		
 		
